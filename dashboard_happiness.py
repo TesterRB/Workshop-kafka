@@ -1,4 +1,3 @@
-# app.py
 import os
 import glob
 import math
@@ -14,9 +13,7 @@ from sklearn.metrics import (
 )
 import joblib
 
-# ================================================================
-# 0) PAGE CONFIG
-# ================================================================
+
 st.set_page_config(
     page_title="Happiness Analytics Dashboard",
     layout="wide",
@@ -26,9 +23,6 @@ st.title("🌍 Happiness Analytics Dashboard")
 st.caption(
     "Exploratory analytics, model diagnostics and geospatial patterns of World Happiness data.")
 
-# ================================================================
-# 1) DB CONNECTION + DATA LOAD (CACHE)
-# ================================================================
 MYSQL_USER = "root"
 MYSQL_PASSWORD = "root"
 MYSQL_HOST = "localhost"
@@ -77,9 +71,6 @@ def load_data():
 
 df = load_data()
 
-# ================================================================
-# 2) SIDEBAR – GLOBAL FILTERS (start empty) + VIEW MODE
-# ================================================================
 st.sidebar.header("Global Filters")
 
 # Year selectable (not slider) – default "All"
@@ -133,10 +124,6 @@ if gdp_range and "GDP_per_Capita" in filtered.columns:
             filtered["GDP_per_Capita"] <= gdp_range[1])
     ]
 
-# ================================================================
-# Helper: choose which value(s) build traces by view_mode
-# ================================================================
-
 
 def add_actual_trace(fig, x, y, name="Actual", **kwargs):
     fig.add_trace(go.Scatter(
@@ -174,9 +161,6 @@ def metric_block(df_scope):
     return (mean_actual, mean_pred, (mae, mape), n_countries, year_choice)
 
 
-# ================================================================
-# 3) TOP KPI CARDS
-# ================================================================
 col1, col2, col3, col4 = st.columns(4)
 mean_actual, mean_pred, (mae_v, mape_v), n_ctry, yr = metric_block(filtered)
 
@@ -194,9 +178,6 @@ col4.metric("# Countries (in selection)", f"{n_ctry}")
 st.caption(f"Year selected: **{yr}**" if yr !=
            "All years" else "Year selected: **All years**")
 
-# ================================================================
-# 4) LAYOUT – MAP (left) + TOP/BOTTOM BARS (right)
-# ================================================================
 row1_left, row1_right = st.columns([1.2, 1])
 
 # ---- Choropleth Map
@@ -279,9 +260,6 @@ with row1_right:
     else:
         st.info("No data available for Top/Bottom charts.")
 
-# ================================================================
-# 5) SCATTER: GDP vs Happiness (bubble size = Generosity)
-# ================================================================
 st.subheader("GDP vs Happiness — bubble size = Generosity")
 scatter_df = filtered.copy()
 if not scatter_df.empty:
@@ -326,9 +304,6 @@ if not scatter_df.empty:
 else:
     st.info("No data for scatter plot.")
 
-# ================================================================
-# 6) CORRELATION HEATMAP (select variables)
-# ================================================================
 st.subheader("Correlation Matrix (select variables)")
 corr_vars_default = ["Happiness_Score", "GDP_per_Capita", "Social_Support", "Life_Expectancy",
                      "Freedom", "Government_Corruption", "Generosity", "Happiness_Score_Predicted"]
@@ -350,9 +325,6 @@ if len(vars_chosen) >= 2:
 else:
     st.info("Select at least two variables.")
 
-# ================================================================
-# 7) FEATURE IMPORTANCE (from model if available; else proxy)
-# ================================================================
 st.subheader("Feature Importance (Model)")
 
 
@@ -411,9 +383,6 @@ if not loaded:
         else:
             st.info("Not enough data to compute proxy importance.")
 
-# ================================================================
-# 8) TIME SERIES — Top/Bottom N countries (multi-line)
-# ================================================================
 st.subheader("Time Series — Top/Bottom N Countries")
 ts_N = st.slider("Select N for time series panels", 3, 15, 5, 1, key="tsN")
 
@@ -448,9 +417,6 @@ if not ts_df.empty and "Happiness_Score" in ts_df:
 else:
     st.info("Not enough data for time series.")
 
-# ================================================================
-# 9) ACTUAL vs PREDICTED — identity line & grouped bars
-# ================================================================
 st.subheader("Actual vs Predicted — per Country/Year")
 
 avp_df = filtered.dropna(
@@ -498,9 +464,6 @@ if not avp_df.empty:
 else:
     st.info("Need both Actual and Predicted to show this section.")
 
-# ================================================================
-# 10) DISTRIBUTIONS — Box/Violin
-# ================================================================
 st.subheader("Distributions — Boxplots / Violin")
 dist_var = st.selectbox(
     "Select variable",
@@ -520,9 +483,6 @@ if not filtered.empty:
 else:
     st.info("No data to plot distributions.")
 
-# ================================================================
-# 11) RADAR PROFILE (2–3 countries)
-# ================================================================
 st.subheader("Radar — Country multivariate profile")
 radar_vars = [c for c in ["GDP_per_Capita", "Social_Support", "Life_Expectancy",
                           "Freedom", "Government_Corruption", "Generosity"] if c in filtered.columns]
@@ -561,9 +521,6 @@ if radar_countries and radar_vars:
 else:
     st.info("Choose 1–3 countries and ensure variables are available.")
 
-# ================================================================
-# 12) RESIDUALS — histogram + residual vs predicted
-# ================================================================
 st.subheader("Model Residuals")
 res_df = filtered.dropna(subset=["Residual", "Happiness_Score_Predicted"])
 if not res_df.empty:
@@ -579,9 +536,6 @@ if not res_df.empty:
 else:
     st.info("Residuals require both actual and predicted values.")
 
-# ================================================================
-# 13) SMALL MULTIPLES by Year (GDP vs Happiness)
-# ================================================================
 st.subheader("Small Multiples — GDP vs Happiness by Year")
 sm_df = filtered.dropna(subset=["GDP_per_Capita", "Happiness_Score"])
 if not sm_df.empty:
@@ -596,9 +550,6 @@ if not sm_df.empty:
 else:
     st.info("Not enough data for small multiples.")
 
-# ================================================================
-# 14) INTERACTIVE TABLE
-# ================================================================
 st.subheader("Interactive Table — raw data")
 show_cols = [c for c in [
     "Country", "Year", "Happiness_Rank", "Happiness_Score", "Happiness_Score_Predicted",
@@ -610,9 +561,6 @@ if not filtered.empty and show_cols:
 else:
     st.info("No rows to display.")
 
-# ================================================================
-# 15) BOTTOM PANEL — ML METRICS (ALWAYS FROM FULL DATA, UNFILTERED BY VIEW TOGGLE)
-# ================================================================
 st.markdown("---")
 st.header("Model Metrics (Global, not affected by the view toggle)")
 
@@ -632,11 +580,9 @@ def compute_global_metrics(dataframe):
     except Exception:
         mape = np.nan
     bias = float(np.mean(y - yhat))
-    # AIC/BIC on simple residuals (Gaussian, same n, k ~ #features used — unknown; we report using k=8 as proxy)
     n = len(y)
     rss = np.sum((y - yhat)**2)
     sigma2 = rss / n
-    # k: use number of predictors in data table proxy
     k = len([c for c in ["GDP_per_Capita", "Social_Support", "Life_Expectancy",
             "Freedom", "Government_Corruption", "Generosity"] if c in dataframe.columns])
     # loglik (Gaussian)
