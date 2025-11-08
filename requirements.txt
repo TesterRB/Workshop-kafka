@@ -1,0 +1,17 @@
+pandas>=2.2
+numpy>=1.26
+matplotlib>=3.9
+seaborn>=0.13
+jupyter
+scikit-learn==1.5.2
+joblib>=1.4
+kafka-python>=2.0.2
+sqlalchemy>=2.0
+pymysql
+mysql-connector-python
+python-dotenv
+openpyxl
+streamlit>=1.38
+statsmodels>=0.14
+scipy>=1.14
+plotly>=5.24
